@@ -3,8 +3,8 @@ package dreamdays.Helf.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter; // ★ 이 import가 중요합니다!
 
 import java.util.List;
 
@@ -12,38 +12,29 @@ import java.util.List;
 public class CorsConfig {
 
     @Bean
-    public CorsConfigurationSource corsFilter() {
+    public CorsFilter corsFilter() { // ★ 리턴 타입을 CorsConfigurationSource -> CorsFilter로 변경
         CorsConfiguration config = new CorsConfiguration();
 
-        // 클라이언트의 origin(도메인) 추가
+        // 1. 허용할 도메인 설정
         config.setAllowedOriginPatterns(List.of(
-                "http://localhost:3000",          // 로컬 환경 (예: React 로컬 개발 서버)
-                "https://eulji-hf.netlify.app"   // 배포된 프론트엔드 URL
+                "http://localhost:3000",          // 로컬 테스트용
+                "https://eulji-hf.netlify.app"    // ★ 실제 배포된 프론트엔드 주소
         ));
 
-        // 모든 HTTP 메서드 허용 (GET, POST, PUT 등)
-        config.addAllowedMethod("*");
+        // 2. 허용할 메서드, 헤더 등 설정
+        config.addAllowedMethod("*");       // GET, POST, PUT, DELETE 등 모두 허용
+        config.addAllowedHeader("*");       // 모든 헤더 허용
+        config.setAllowCredentials(true);   // 쿠키/인증 정보 포함 허용
 
-        // 모든 요청 헤더 허용
-        config.addAllowedHeader("*");
-
-        // 'Content-Type'을 허용하는 헤더 추가
-        config.addAllowedHeader("Content-Type");
-
-        // 특정 응답 헤더를 클라이언트로 전달하도록 설정
-        config.addExposedHeader("Set-Cookie");
+        // 3. 브라우저가 읽을 수 있게 허용할 헤더 (Exposed Headers)
         config.addExposedHeader("Authorization");
+        config.addExposedHeader("Set-Cookie");
 
-        // 자격 증명(쿠키, 인증 헤더 등)을 허용
-        config.setAllowCredentials(true);
-
-        // OPTIONS 메서드를 명시적으로 허용하여 preflight 요청에 응답하도록 설정
-        config.addAllowedMethod("OPTIONS");
-
-        // CORS 설정을 모든 URL 경로에 적용
+        // 4. 설정을 소스에 등록
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
 
-        return source;
+        // 5. ★ 소스를 필터로 감싸서 리턴 (이게 없어서 적용이 안 됐던 겁니다!)
+        return new CorsFilter(source);
     }
 }
