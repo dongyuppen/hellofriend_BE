@@ -7,6 +7,7 @@ import dreamdays.Helf.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,5 +29,11 @@ public class UserController {
     ) {
         CheckInfoResponse response = userService.findByNameAndStudentNumber(name, studentNumber);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/users/all")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 }

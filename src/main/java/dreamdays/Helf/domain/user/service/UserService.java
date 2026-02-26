@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -42,5 +43,10 @@ public class UserService {
             throw new IllegalStateException("이미 뽑기를 진행한 사용자입니다.");
         }
         return CheckInfoResponse.from(user);
+    }
+
+    // 👇 전체 유저 조회 메서드 추가
+    public List<User> getAllUsers() {
+        return userRepository.findAll(); // JPA가 기본으로 제공하는 전체 조회 기능입니다.
     }
 }
