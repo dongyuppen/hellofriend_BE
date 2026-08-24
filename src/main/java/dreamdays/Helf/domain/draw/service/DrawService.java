@@ -7,6 +7,8 @@ import dreamdays.Helf.domain.user.entity.User;
 import dreamdays.Helf.domain.user.entity.enums.Gender;
 import dreamdays.Helf.domain.user.repository.UserRepository;
 import dreamdays.Helf.domain.user.service.UserService;
+import dreamdays.Helf.exception.NoMatchingUserException;
+import dreamdays.Helf.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +43,7 @@ public class DrawService {
 
         //해당 정보 바탕으로 User 엔티티 조회
         User user = userRepository.findByNameAndStudentNumber(checkInfoResponse.getName(), checkInfoResponse.getStudentNumber())
-                .orElseThrow(() -> new IllegalStateException("해당 유저가 존재하지 않습니다."));
+                .orElseThrow(() -> new UserNotFoundException("해당 유저가 존재하지 않습니다."));
 
         //뽑고싶은 성별에 맞는 유저 리스트 조회
         List<User> availableUsers = findByGender(user.getSelectGender());
@@ -66,7 +68,7 @@ public class DrawService {
             if (!pickedUsers.isEmpty()) {
                 drawnUser = selectRandomUser(pickedUsers);
             } else {
-                throw new IllegalStateException("조건에 맞는 사용자가 없습니다.");
+                throw new NoMatchingUserException("조건에 맞는 사용자가 없습니다.");
             }
         }
 

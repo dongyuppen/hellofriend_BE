@@ -3,6 +3,7 @@ package dreamdays.Helf.domain.user.service;
 import dreamdays.Helf.domain.user.dto.CheckInfoResponse;
 import dreamdays.Helf.domain.user.dto.InfoRequest;
 import dreamdays.Helf.domain.user.entity.User;
+import dreamdays.Helf.exception.AlreadyDrawnException;
 import dreamdays.Helf.exception.UserNotFoundException;
 import dreamdays.Helf.exception.UserAlreadyExistsException; // 커스텀 예외 추가
 import dreamdays.Helf.domain.user.repository.UserRepository;
@@ -40,7 +41,7 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("해당 학번과 이름을 가진 사용자가 존재하지 않습니다."));
 
         if (user.isDraw()) {
-            throw new IllegalStateException("이미 뽑기를 진행한 사용자입니다.");
+            throw new AlreadyDrawnException("이미 뽑기를 진행한 사용자입니다.");
         }
         return CheckInfoResponse.from(user);
     }
