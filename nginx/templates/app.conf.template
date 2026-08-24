@@ -1,0 +1,39 @@
+# nginx 공식 이미지가 컨테이너 시작 시 이 파일의 ${DOMAIN}을
+# docker-compose.yml에 설정된 환경변수 값으로 치환해서
+# /etc/nginx/conf.d/app.conf 로 생성합니다. (다른 $변수는 그대로 유지됨)
+
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    # Let's Encrypt 인증서 발급/갱신용 challenge 경로
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    # 그 외 요청은 모두 HTTPS로 리다이렉트
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    client_max_body_size 20M;
+
+    location / {
+        proxy_pass http://app:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

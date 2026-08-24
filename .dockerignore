@@ -1,0 +1,17 @@
+.git
+.gitignore
+.gradle
+.idea
+build
+out
+bin
+*.iml
+*.iws
+*.ipr
+HELP.md
+*.md
+.env
+.env.*
+certbot
+nginx
+docker-compose.yml

@@ -1,0 +1,35 @@
+# 배포(prod) 환경 설정
+# 로컬 개발용 application.yml은 .gitignore에 의해 커밋되지 않으므로,
+# 배포 환경은 이 파일 + 컨테이너에 주입되는 환경변수(docker-compose.yml 참고)로 동작합니다.
+# 실행 시 SPRING_PROFILES_ACTIVE=prod 로 활성화됩니다.
+
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:mysql}:${DB_PORT:3306}/${DB_NAME:helf}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${DB_USERNAME:helf_user}
+    password: ${DB_PASSWORD:helf_password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  thymeleaf:
+    cache: true
+
+server:
+  port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
+
+logging:
+  level:
+    root: INFO
+    dreamdays.Helf: INFO

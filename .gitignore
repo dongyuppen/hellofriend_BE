@@ -38,3 +38,7 @@ out/
 
 ### Project ###
 **/application.yml
+
+### Deploy ###
+.env
+certbot/
