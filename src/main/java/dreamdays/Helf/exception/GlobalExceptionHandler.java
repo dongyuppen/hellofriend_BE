@@ -1,6 +1,7 @@
 package dreamdays.Helf.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -51,6 +52,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException e) {
         return buildResponse(HttpStatus.NOT_FOUND, "NOT_FOUND", "요청한 경로를 찾을 수 없습니다.");
+    }
+
+    // DB 유니크 제약(예: 학번이 이름과 무관하게 이미 다른 사람에게 쓰이고 있음) 위반 → 409
+    // 앱 레벨 중복 체크(existsByNameAndStudentNumber)를 통과했더라도,
+    // studentNumber 컬럼 자체가 전역 unique라서 이름이 달라도 저장 시점에 걸릴 수 있다.
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        log.warn("Data integrity violation: {}", e.getMessage());
+        return buildResponse(HttpStatus.CONFLICT, "DUPLICATE_VALUE", "이미 다른 사용자가 사용 중인 값입니다 (학번 등 중복 확인 필요).");
     }
 
     // 위 케이스로 분류되지 않은 기타 상태 오류 → 409
