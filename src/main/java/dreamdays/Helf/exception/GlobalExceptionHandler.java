@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -44,6 +45,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoMatchingUserException.class)
     public ResponseEntity<Map<String, Object>> handleNoMatchingUser(NoMatchingUserException e) {
         return buildResponse(HttpStatus.CONFLICT, "NO_MATCHING_USER", e.getMessage());
+    }
+
+    // 존재하지 않는 경로/정적 리소스 요청 (예: "/" 루트, 오타 URL 등) → 404, 에러 로그는 남기지 않음
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException e) {
+        return buildResponse(HttpStatus.NOT_FOUND, "NOT_FOUND", "요청한 경로를 찾을 수 없습니다.");
     }
 
     // 위 케이스로 분류되지 않은 기타 상태 오류 → 409
