@@ -25,6 +25,10 @@ spring:
   thymeleaf:
     cache: true
 
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
 springdoc:
   api-docs:
     enabled: ${SWAGGER_ENABLED:true}
