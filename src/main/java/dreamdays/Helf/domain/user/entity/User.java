@@ -1,6 +1,5 @@
 package dreamdays.Helf.domain.user.entity;
 
-import dreamdays.Helf.domain.user.entity.enums.Department;
 import dreamdays.Helf.domain.user.entity.enums.Gender;
 import dreamdays.Helf.domain.user.entity.enums.Mbti;
 import jakarta.persistence.*;
@@ -19,32 +18,30 @@ public class User {
     private Long id;
 
     @Column(nullable = false)
-    private String name; //학생 이름
+    private String name;
 
-    @Column(nullable = false, unique = true)
-    private int studentNumber; //학번
-
-    @Column(nullable = false)
-    private String instagramId; //인스타id
+    @Column(nullable = false, unique = true, length = 11)
+    private String phoneNumber;
 
     @Column(nullable = false)
-    private int age; //나이
+    private String instagramId;
+
+    @Column(nullable = false)
+    private int age;
 
     @Enumerated(EnumType.STRING) @Column(nullable = false)
-    private Gender gender; //성별
+    private Gender gender;
+
+    @Column(nullable = false)
+    private String school;
 
     @Enumerated(EnumType.STRING) @Column(nullable = false)
-    private Department department; //학과
+    private Mbti mbti;
 
     @Enumerated(EnumType.STRING) @Column(nullable = false)
-    private Mbti mbti; //mbti
+    private Gender selectGender;
 
-    @Enumerated(EnumType.STRING) @Column(nullable = false)
-    private Gender selectGender; //뽑고싶은 성별
-
-    private String bio; // 한줄소개
-
-    private boolean picked; // 뽑힌 여부 (뽑힌 사람)
-
-    private boolean isDraw; // 뽑기 여부 (뽑는 사람)
+    private String bio;
+    private boolean picked;
+    private boolean isDraw;
 }

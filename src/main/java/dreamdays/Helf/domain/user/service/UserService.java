@@ -27,18 +27,18 @@ public class UserService {
     public void saveUser(InfoRequest infoRequest) { //User대신 InfoRequest
         User user = infoRequest.toEntity();
         // 중복 회원 검증
-        if (userRepository.existsByNameAndStudentNumber(user.getName(), user.getStudentNumber())) {
+        if (userRepository.existsByNameAndPhoneNumber(user.getName(), user.getPhoneNumber())) {
             throw new UserAlreadyExistsException("이미 존재하는 회원입니다.");
         }
         userRepository.save(user);
     }
 
     /**
-     * 이름과 학번으로 회원 조회
+     * 이름과 전화번호로 회원 조회
      */
-    public CheckInfoResponse findByNameAndStudentNumber(String name, int studentNumber) {
-        User user = userRepository.findByNameAndStudentNumber(name, studentNumber)
-                .orElseThrow(() -> new UserNotFoundException("해당 학번과 이름을 가진 사용자가 존재하지 않습니다."));
+    public CheckInfoResponse findByNameAndPhoneNumber(String name, String phoneNumber) {
+        User user = userRepository.findByNameAndPhoneNumber(name, phoneNumber)
+                .orElseThrow(() -> new UserNotFoundException("해당 전화번호와 이름을 가진 사용자가 존재하지 않습니다."));
 
         if (user.isDraw()) {
             throw new AlreadyDrawnException("이미 뽑기를 진행한 사용자입니다.");

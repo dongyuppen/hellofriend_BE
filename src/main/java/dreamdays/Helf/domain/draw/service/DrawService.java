@@ -33,16 +33,16 @@ public class DrawService {
     }
     //뽑기 로직
     @Transactional
-    public DrawResponse drawRandomUser(String name, int studentNumber) {
+    public DrawResponse drawRandomUser(String name, String phoneNumber) {
         /**
          * 뽑는 유저 조회 일반
          * service에서 가져온 것을 dto에서 가져오는 걸로 변경!
          */
-//        User user = userService.findByNameAndStudentNumber(name, studentNumber);
-        CheckInfoResponse checkInfoResponse = userService.findByNameAndStudentNumber(name, studentNumber);
+//        User user = userService.findByNameAndPhoneNumber(name, phoneNumber);
+        CheckInfoResponse checkInfoResponse = userService.findByNameAndPhoneNumber(name, phoneNumber);
 
         //해당 정보 바탕으로 User 엔티티 조회
-        User user = userRepository.findByNameAndStudentNumber(checkInfoResponse.getName(), checkInfoResponse.getStudentNumber())
+        User user = userRepository.findByNameAndPhoneNumber(checkInfoResponse.getName(), checkInfoResponse.getPhoneNumber())
                 .orElseThrow(() -> new UserNotFoundException("해당 유저가 존재하지 않습니다."));
 
         //뽑고싶은 성별에 맞는 유저 리스트 조회

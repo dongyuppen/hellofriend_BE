@@ -18,7 +18,7 @@ public class DrawController {
 
     @PostMapping("/draw")
     public ResponseEntity<DrawResponse> postRandomDraw(@RequestBody DrawRequest request) {
-        DrawResponse response = drawService.drawRandomUser(request.getName(), request.getStudentNumber());
+        DrawResponse response = drawService.drawRandomUser(request.getName(), request.getPhoneNumber());
         return ResponseEntity.ok(response);
     }
 }

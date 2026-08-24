@@ -4,12 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 서비스 계층에서 던지는 예외를 적절한 HTTP 상태코드로 변환한다.
@@ -54,13 +57,22 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, "NOT_FOUND", "요청한 경로를 찾을 수 없습니다.");
     }
 
-    // DB 유니크 제약(예: 학번이 이름과 무관하게 이미 다른 사람에게 쓰이고 있음) 위반 → 409
-    // 앱 레벨 중복 체크(existsByNameAndStudentNumber)를 통과했더라도,
-    // studentNumber 컬럼 자체가 전역 unique라서 이름이 달라도 저장 시점에 걸릴 수 있다.
+    // DB 유니크 제약(예: 전화번호가 이름과 무관하게 이미 다른 사람에게 쓰이고 있음) 위반 → 409
+    // 앱 레벨 중복 체크(existsByNameAndPhoneNumber)를 통과했더라도,
+    // phoneNumber 컬럼 자체가 전역 unique라서 이름이 달라도 저장 시점에 걸릴 수 있다.
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException e) {
         log.warn("Data integrity violation: {}", e.getMessage());
-        return buildResponse(HttpStatus.CONFLICT, "DUPLICATE_VALUE", "이미 다른 사용자가 사용 중인 값입니다 (학번 등 중복 확인 필요).");
+        return buildResponse(HttpStatus.CONFLICT, "DUPLICATE_VALUE", "이미 다른 사용자가 사용 중인 값입니다 (전화번호 등 중복 확인 필요).");
+    }
+
+    // @Valid 검증 실패 (예: 전화번호가 11자리 숫자가 아님, 학교명이 빈 값) → 400
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.joining(", "));
+        return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", message.isBlank() ? "요청 값이 올바르지 않습니다." : message);
     }
 
     // 위 케이스로 분류되지 않은 기타 상태 오류 → 409
