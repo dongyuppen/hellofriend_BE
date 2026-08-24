@@ -13,6 +13,10 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - helf-net
+    # 127.0.0.1에만 열려있어 EC2 외부(인터넷)에서는 접근 불가.
+    # 로컬 DB 툴(IntelliJ 등)에서 보려면 SSH 터널을 이용하세요 (DEPLOYMENT.md 참고).
+    ports:
+      - "127.0.0.1:3306:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
       interval: 10s
