@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -73,6 +74,14 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
         return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", message.isBlank() ? "요청 값이 올바르지 않습니다." : message);
+    }
+
+    // 요청 body 자체를 파싱할 수 없는 경우 (JSON 문법 오류, enum에 없는 값 전송 등, 예: gender에 "MALE" 전송 — 실제 enum은 "남성"/"여성") → 400
+    // 이걸 안 잡으면 catch-all(Exception)로 떨어져서 500 + ERROR 로그로 나가는데, 사실은 클라이언트 입력 문제다.
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleMessageNotReadable(HttpMessageNotReadableException e) {
+        log.warn("Malformed request body: {}", e.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, "INVALID_REQUEST", "요청 형식이 올바르지 않습니다 (enum 값 오타 등을 확인해주세요).");
     }
 
     // 위 케이스로 분류되지 않은 기타 상태 오류 → 409

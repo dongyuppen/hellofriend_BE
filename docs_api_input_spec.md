@@ -17,17 +17,18 @@
   "phoneNumber": "01012345678",
   "instagramId": "hong_gd",
   "age": 23,
-  "gender": "MALE",
+  "gender": "남성",
   "school": "한양대학교",
   "mbti": "INFP",
-  "selectGender": "FEMALE",
+  "selectGender": "여성",
   "bio": "자기소개"
 }
 ```
 
 - `phoneNumber`: 숫자만 11자리 문자열. 형식이 틀리면 `400 INVALID_REQUEST`로 응답.
 - `school`: 자유 입력 텍스트. 빈 값 불가.
-- `gender`, `selectGender`, `mbti`: enum, 기존과 동일.
+- `gender`, `selectGender`: enum 값은 **`"남성"` / `"여성"`** (영문 `MALE`/`FEMALE` 아님 — 이거 잘못 보내면 400 에러 납니다, 프론트 꼭 확인해주세요).
+- `mbti`: `INTJ`, `INTP`, `ENTJ`, `ENTP`, `INFJ`, `INFP`, `ENFJ`, `ENFP`, `ISTJ`, `ISFJ`, `ESTJ`, `ESFJ`, `ISTP`, `ISFP`, `ESTP`, `ESFP` 중 하나 (영문 그대로).
 
 ## 2. `GET /api/users/check-info` — 정보 조회
 
