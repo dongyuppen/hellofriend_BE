@@ -60,8 +60,9 @@ public class DrawService {
             // picked가 false인 사람들에서 랜덤으로 선택
             drawnUser = selectRandomUser(notPickedUsers);
         } else {
-            // picked가 true인 사람들 중에서 랜덤으로 뽑기
+            // picked가 true인 사람들 중에서 랜덤으로 뽑기 (자기 자신은 제외해야 함)
             List<User> pickedUsers = availableUsers.stream()
+                    .filter(u -> !u.equals(user))
                     .filter(u -> u.isPicked())
                     .collect(Collectors.toList());
 
