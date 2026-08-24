@@ -18,7 +18,7 @@ public class CorsConfig {
         // 1. 허용할 도메인 설정
         config.setAllowedOriginPatterns(List.of(
                 "http://localhost:3000",          // 로컬 테스트용
-                "https://eulji-hf.netlify.app"    // ★ 실제 배포된 프론트엔드 주소
+                "https://eullaem.vercel.app"      // ★ 실제 배포된 프론트엔드 주소
         ));
 
         // 2. 허용할 메서드, 헤더 등 설정
