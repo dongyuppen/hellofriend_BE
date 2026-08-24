@@ -1,0 +1,69 @@
+# 로컬 테스트용 docker-compose 파일.
+# nginx/certbot 없이 app + mysql만 띄우고 8080/13306(호스트 기준)을 바로 로컬에 노출합니다.
+# mysql 호스트 포트는 3306/3307 등 흔히 쓰는 포트와 안 겹치도록 13306으로 매핑했습니다.
+# 그래도 충돌나면: lsof -i :13306 으로 확인 후, 아래 "13306:3306"의 왼쪽 숫자만 바꾸면 됩니다.
+#
+# 사용법:
+#   docker compose -f docker-compose.local.yml up --build
+#   → http://localhost:8080/swagger-ui.html
+#   → http://localhost:8080/api/users/all
+#
+# 종료:
+#   docker compose -f docker-compose.local.yml down       # 컨테이너만 정리
+#   docker compose -f docker-compose.local.yml down -v    # 로컬 DB 데이터까지 초기화
+#
+# 값을 바꾸고 싶으면 .env.local 파일을 만들어서
+#   docker compose -f docker-compose.local.yml --env-file .env.local up --build
+# 로 실행하면 아래 기본값 대신 .env.local 값이 사용됩니다.
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: helf-mysql-local
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-helf}
+      MYSQL_USER: ${DB_USERNAME:-helf_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-helf_local_pw}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-helf_local_root_pw}
+      TZ: Asia/Seoul
+    ports:
+      - "13306:3306"
+    volumes:
+      - mysql_local_data:/var/lib/mysql
+    networks:
+      - helf-local-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-helf_local_root_pw}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: helf-app-local
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-helf}
+      DB_USERNAME: ${DB_USERNAME:-helf_user}
+      DB_PASSWORD: ${DB_PASSWORD:-helf_local_pw}
+      DDL_AUTO: ${DDL_AUTO:-update}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - helf-local-net
+
+networks:
+  helf-local-net:
+    driver: bridge
+
+volumes:
+  mysql_local_data:
