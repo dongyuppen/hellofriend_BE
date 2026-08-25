@@ -1,8 +1,12 @@
 package dreamdays.Helf.exception;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -11,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,7 +31,10 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
+    private final ObjectMapper objectMapper;
 
     // 존재하지 않는 유저 조회 → 404
     @ExceptionHandler(UserNotFoundException.class)
@@ -52,10 +60,25 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.CONFLICT, "NO_MATCHING_USER", e.getMessage());
     }
 
-    // 존재하지 않는 경로/정적 리소스 요청 (예: "/" 루트, 오타 URL 등) → 404, 에러 로그는 남기지 않음
+    // 존재하지 않는 경로/정적 리소스 요청 (예: "/" 루트, /favicon.ico, 오타 URL 등) → 404, 에러 로그는 남기지 않음
+    //
+    // 주의: 이 예외는 스프링이 "정적 리소스 요청"으로 판단한 경로에서 나오기 때문에, 요청 확장자/Accept 헤더에 따라
+    // 스프링의 콘텐츠 협상(content negotiation)이 JSON을 "허용 안 되는 응답 타입"으로 걸러버리는 경우가 있다
+    // (HttpMediaTypeNotAcceptableException: No acceptable representation). 그래서 다른 핸들러들처럼
+    // ResponseEntity를 리턴해서 스프링의 메시지 컨버터/콘텐츠 협상을 타게 하지 않고, HttpServletResponse에
+    // 직접 JSON을 써서 그 과정을 아예 건너뛴다.
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException e) {
-        return buildResponse(HttpStatus.NOT_FOUND, "NOT_FOUND", "요청한 경로를 찾을 수 없습니다.");
+    public void handleNoResourceFound(HttpServletResponse response) throws IOException {
+        Map<String, Object> body = Map.of(
+                "timestamp", LocalDateTime.now().toString(),
+                "status", HttpStatus.NOT_FOUND.value(),
+                "errorCode", "NOT_FOUND",
+                "message", "요청한 경로를 찾을 수 없습니다."
+        );
+        response.setStatus(HttpStatus.NOT_FOUND.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+        objectMapper.writeValue(response.getWriter(), body);
     }
 
     // DB 유니크 제약(예: 전화번호가 이름과 무관하게 이미 다른 사람에게 쓰이고 있음) 위반 → 409

@@ -42,9 +42,12 @@ public class DrawService {
         }
 
         //뽑고싶은 성별에 맞는, 아직 아무와도 맺어지지 않은 후보만 조회 (자기 자신 제외)
+        // + 상대방도 나의 성별을 원하는 경우만 후보로 포함 (양쪽 선호가 서로 맞아야 매칭됨).
+        //   이 체크가 없으면 "내가 원하는 성별"만 보고, 그 상대가 실제로 원하는 성별은 무시한 채 매칭돼버린다.
         List<User> candidates = findByGender(user.getSelectGender()).stream()
                 .filter(u -> !u.equals(user))
                 .filter(u -> u.getPartner() == null)
+                .filter(u -> u.getSelectGender().equals(user.getGender()))
                 .collect(Collectors.toList());
 
         if (candidates.isEmpty()) {
